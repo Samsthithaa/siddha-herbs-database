@@ -388,26 +388,41 @@
             document.getElementById('modalOverlay').style.display = 'none';
         }
 
-        function exportFilteredData() {
-            if (filteredData.length === 0) return;
+       unction exportFilteredData() {
+  if (!filteredData || filteredData.length === 0) return;
 
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "ID,Tamil Name,English Name,Botanical Name,Used Parts,Taste,Property,Indications (Tamil)\n";
+  // Including BOM (\uFEFF) ensures Excel opens Tamil/UTF-8 characters correctly
+  let csvContent = "\uFEFFID,Tamil Name,English Name,Botanical Name,Used Parts,Taste,Property,Indications (Tamil)\n";
 
-            filteredData.forEach(h => {
-                let row = `"${h.id}","${h.tamil_name}","${h.english_name}","${h.botanical_name}","${h.used_parts.join(';')}"`,
-                          `"${h.taste_suvai.join(';')}","${h.property_thanmai}","${h.indications_tamil.join(';')}"`;
-                csvContent += row + "\n";
-            });
+  filteredData.forEach(h => {
+    const safeJoin = arr => Array.isArray(arr) ? arr.join(';') : (arr || '');
+    
+    let row = [
+      `"${h.id || ''}"`,
+      `"${h.tamil_name || ''}"`,
+      `"${h.english_name || ''}"`,
+      `"${h.botanical_name || ''}"`,
+      `"${safeJoin(h.used_parts)}"`,
+      `"${safeJoin(h.taste_suvai)}"`,
+      `"${h.property_thanmai || ''}"`,
+      `"${safeJoin(h.indications_tamil)}"`
+    ].join(',');
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "siddha_herbs_filtered.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+    csvContent += row + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "siddha_herbs_filtered.csv");
+  document.body.appendChild(link);
+  link.click();
+  
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
         window.onload = loadData;
     </script>
