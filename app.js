@@ -1,285 +1,176 @@
-let herbsData = [];
+const herbsDatabase = [
+  {
+    "herb_number": 1,
+    "herb_name": "Agathi",
+    "tamil_name": "அகத்தி",
+    "english_name": "Hummingbird Tree / Agati / Swamp Pea",
+    "botanical_name": "Sesbania grandiflora (Linn.) Pers.",
+    "taste": "Bitter, Sweet, Astringent",
+    "suvai": "கைப்பு, தித்திப்பு, துவர்ப்பு",
+    "veeriyam": "தட்பம் (Cooling)",
+    "gunam": "பித்தக் கோளாறுகள், உடற்சூடு, மலக்கட்டு, பித்த மயக்கம் ஆகியவற்றைத் தணிக்கும்.",
+    "pharmacological_action": "பித்தசமனி (Antibilious), மலமிளக்கி (Laxative)"
+  },
+  {
+    "herb_number": 2,
+    "herb_name": "Agil (Agaru)",
+    "tamil_name": "அகில் (அகருகட்டை)",
+    "english_name": "Eaglewood / Agarwood / Aloe-wood",
+    "botanical_name": "Aquilaria agallocha Roxb.",
+    "taste": "Pungent, Bitter, Mild Sweet",
+    "suvai": "கார்ப்பு, கைப்பு, சிறு இனிப்பு",
+    "veeriyam": "வெப்பம் (Hot)",
+    "gunam": "மூக்கடைப்பு, ஒற்றைத் தலைவலி, வாதம், நமைச்சல்கள், சுரம், சுவாசம் ஆகியவற்றை நீக்கும்.",
+    "pharmacological_action": "வெப்பமுண்டாக்கி (Stimulant), பித்தநீர்ப்பெருக்கி (Cholagogue), வீக்கமுருக்கி (Deobstruent)"
+  },
+  {
+    "herb_number": 3,
+    "herb_name": "Akkaragaram",
+    "tamil_name": "அக்கராகாரம்",
+    "english_name": "Pellitory of Spain / Pellithry Root",
+    "botanical_name": "Anacyclus pyrethrum DC.",
+    "taste": "Pungent",
+    "suvai": "கார்ப்பு",
+    "veeriyam": "வெப்பம் (Hot)",
+    "gunam": "வாததோடம், நீர்வேட்கை, நாவறட்சி, பல்வலி, தொண்டைக்கட்டல், நா அசைவற்றுப் போதல் ஆகியவற்றை நீக்கும்.",
+    "pharmacological_action": "வெப்பமுண்டாக்கி (Stimulant), உமிழ்சீர்ப்பெருக்கி (Sialogogue), தடிப்புண்டாக்கி (Rubefacient)"
+  },
+  {
+    "herb_number": 8,
+    "herb_name": "Ati Maduram",
+    "tamil_name": "அதிமதுரம்",
+    "english_name": "Liquorice / Jamaica Liquorice",
+    "botanical_name": "Glycyrrhiza glabra Linn.",
+    "taste": "Sweet",
+    "suvai": "இனிப்பு",
+    "veeriyam": "தட்பம் (Cooling)",
+    "gunam": "தலைவலி, ஒற்றைத்தலைவலி, காய்ச்சல், நாவறட்சி, இருமல், கண் எரிச்சல், தாகச்சுரம் ஆகியவற்றைத் தணிக்கும்.",
+    "pharmacological_action": "கோழையகற்றி (Expectorant), உள்ளழலாற்றி (Demulcent), தாகசமனி (Refrigerant), உடற்றேற்றி (Alterative)"
+  },
+  {
+    "herb_number": 14,
+    "herb_name": "Amukkurak-Kizhangu",
+    "tamil_name": "அமுக்குராக்கிழங்கு",
+    "english_name": "Winter Cherry / Ashwagandha",
+    "botanical_name": "Withania somnifera (Linn) Dunal",
+    "taste": "Bitter",
+    "suvai": "கைப்பு",
+    "veeriyam": "வெப்பம் (Hot)",
+    "gunam": "கயம், வளிக்கூட்டங்கள், கரப்பான், சுரம், வீக்கம் ஆகியவற்றைப் போக்கும், பசித்தீயையுண்டாக்கும்.",
+    "pharmacological_action": "உடற்றேற்றி (Alterative), ஆண்மைப்பெருக்கி (Aphrodisiac), வீக்கமுருக்கி (Deobstruent), சிறுநீர்ப்பெருக்கி (Diuretic), உரமாக்கி (Tonic), உறக்கமுண்டாக்கி (Soporific)"
+  },
+  {
+    "herb_number": 43,
+    "herb_name": "Avarai (Avaram)",
+    "tamil_name": "ஆவாரை (ஆவாரம்)",
+    "english_name": "Tanner's Cassia / Avaram",
+    "botanical_name": "Senna auriculata (Linn.) Roxb. / Cassia auriculata Linn.",
+    "taste": "Astringent",
+    "suvai": "துவர்ப்பு",
+    "veeriyam": "தட்பம் (Cooling)",
+    "gunam": "நீரிழிவு, மேக நோய், நாவறட்சி, உடற்சூடு, சிறுநீரில் சர்க்கரை ஆகியவற்றைக் கட்டுப்படுத்தும்.",
+    "pharmacological_action": "துவர்ப்பி (Astringent), உடற்றேற்றி (Alterative), நீரழிவு அகற்றி (Antidiabetic)"
+  },
+  {
+    "herb_number": 128,
+    "herb_name": "Karisalankanni",
+    "tamil_name": "கரிசலாங்கண்ணி (கையாந்தகரை)",
+    "english_name": "Trailing Eclipta / Bhringraj",
+    "botanical_name": "Eclipta prostrata (Linn) Linn.",
+    "taste": "Bitter",
+    "suvai": "கைப்பு",
+    "veeriyam": "வெப்பம் (Hot)",
+    "gunam": "பெருவயிறு, ஏறுபித்தம், காமாலை, சோகை, மண்ணீரல் வீக்கம், கல்லீரல் கோளாறுகளைக் குணமாக்கும்.",
+    "pharmacological_action": "பித்தநீர்ப்பெருக்கி (Cholagogue), உரமாக்கி (Tonic), உடற்றேற்றி (Alterative), ஈரல்தேற்றி (Hepatic tonic)"
+  },
+  {
+    "herb_number": 153,
+    "herb_name": "Katrazhai",
+    "tamil_name": "கற்றாழை (சோற்றுக்கற்றாழை)",
+    "english_name": "Indian Aloe / Aloe Vera",
+    "botanical_name": "Aloe vera (Linn.) Burm.f. / Aloe barbadensis",
+    "taste": "Mild Bitter, Sweet",
+    "suvai": "சிறுகைப்பு, இனிப்பு",
+    "veeriyam": "தட்பம் (Cooling)",
+    "gunam": "உடற்சூடு, கண் எரிச்சல், மேகவெள்ளை, கருப்பை நோய்கள், மூலம் ஆகியவற்றைக் குணப்படுத்தும்.",
+    "pharmacological_action": "குளிர்ச்சியுண்டாக்கி (Refrigerant), உள்ளழலாற்றி (Demulcent), மலமிளக்கி (Laxative)"
+  }
+];
 
-// DOM Elements
-const herbGrid = document.getElementById("herb-grid");
-const herbCount = document.getElementById("herb-count");
-const searchInput = document.getElementById("search-input");
-const tasteFilter = document.getElementById("taste-filter");
-const veeriyamFilter = document.getElementById("veeriyam-filter");
-const actionFilter = document.getElementById("action-filter");
-const resetBtn = document.getElementById("reset-btn");
+function getFieldValue(herb, ...keys) {
+  for (const key of keys) {
+    const value = herb[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+  return '';
+}
 
-// Initialize when page loads
-document.addEventListener("DOMContentLoaded", () => {
-  fetch("herbs_data_2.json")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      herbsData = data;
+function normalizeHerb(herb) {
+  return {
+    herb_name: getFieldValue(herb, 'herb_name', 'name'),
+    tamil_name: getFieldValue(herb, 'tamil_name', 'tamilName'),
+    english_name: getFieldValue(herb, 'english_name', 'englishName'),
+    botanical_name: getFieldValue(herb, 'botanical_name', 'botanicalName'),
+    taste: getFieldValue(herb, 'taste'),
+    suvai: getFieldValue(herb, 'suvai'),
+    veeriyam: getFieldValue(herb, 'veeriyam'),
+    gunam: getFieldValue(herb, 'gunam'),
+    pharmacological_action: getFieldValue(herb, 'pharmacological_action')
+  };
+}
 
-      populateFilterOptions(data);
-      renderCards(data);
-    })
-    .catch((error) => {
-      console.error("Error loading JSON:", error);
+function displayHerbs(herbs) {
+  const container = document.getElementById('herbsGrid') || document.getElementById('herbContainer');
 
-      herbGrid.innerHTML = `
-        <div class="error-message">
-          Unable to load herb data.
-        </div>
-      `;
-    });
-
-  // Event listeners
-  searchInput.addEventListener("input", filterData);
-  tasteFilter.addEventListener("change", filterData);
-  veeriyamFilter.addEventListener("change", filterData);
-  actionFilter.addEventListener("change", filterData);
-  resetBtn.addEventListener("click", resetFilters);
-});
-
-
-// ==========================================
-// RENDER HERB CARDS
-// ==========================================
-
-function renderCards(data) {
-  herbGrid.innerHTML = "";
-
-  herbCount.textContent = data.length;
-
-  if (data.length === 0) {
-    herbGrid.innerHTML = `
-      <div class="no-results">
-        No herbs match your criteria.
-      </div>
-    `;
+  if (!container) {
     return;
   }
 
-  data.forEach((herb) => {
-    const card = document.createElement("div");
+  if (herbs.length === 0) {
+    container.innerHTML = '<p>No herbs found matching your search.</p>';
+    return;
+  }
 
-    card.className = "herb-card";
+  const normalized = herbs.map(normalizeHerb);
 
-    card.innerHTML = `
-      <div class="herb-number">
-        #${herb.herb_number || "N/A"}
-      </div>
-
-      <h3 class="herb-name">
-        ${herb.herb_name || "Unknown Herb"}
-      </h3>
-
-      <p class="tamil-name">
-        ${herb.tamil_name || "N/A"}
-      </p>
-
-      <p class="botanical-name">
-        <em>${herb.botanical_name || "N/A"}</em>
-      </p>
-
-      <p>
-        <strong>English:</strong>
-        ${herb.english_name || "N/A"}
-      </p>
-
-      <p>
-        <strong>Taste (Suvai):</strong>
-        ${herb.taste || herb.suvai || "N/A"}
-      </p>
-
-      <p>
-        <strong>Veeriyam:</strong>
-        ${herb.veeriyam || "N/A"}
-      </p>
-
-      <p>
-        <strong>Action:</strong>
-        ${herb.pharmacological_action || "N/A"}
-      </p>
-
-      <p>
-        <strong>Gunam:</strong>
-        ${herb.gunam || "N/A"}
-      </p>
-    `;
-
-    herbGrid.appendChild(card);
-  });
+  container.innerHTML = normalized.map((herb) => `
+    <div class="herb-card">
+      <h3>${herb.herb_name} (${herb.tamil_name})</h3>
+      <p><strong>Botanical Name:</strong> ${herb.botanical_name}</p>
+      <p><strong>English Name:</strong> ${herb.english_name}</p>
+      <p><strong>Suvai / Taste:</strong> ${herb.suvai || herb.taste}</p>
+      <p><strong>Veeriyam:</strong> ${herb.veeriyam}</p>
+      <p><strong>Gunam:</strong> ${herb.gunam}</p>
+      <p><strong>Pharmacological Action:</strong> ${herb.pharmacological_action}</p>
+    </div>
+  `).join('');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchInput');
 
-// ==========================================
-// POPULATE FILTER DROPDOWNS
-// ==========================================
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim().toLowerCase();
 
-function populateFilterOptions(data) {
+      const filtered = herbsDatabase.filter((herb) => {
+        const normalized = normalizeHerb(herb);
+        const searchableText = [
+          normalized.herb_name,
+          normalized.tamil_name,
+          normalized.english_name,
+          normalized.botanical_name,
+          normalized.gunam
+        ].join(' ').toLowerCase();
 
-  const tastes = new Set();
-  const veeriyams = new Set();
-  const actions = new Set();
+        return searchableText.includes(query);
+      });
 
-  data.forEach((item) => {
-
-    // Taste
-    if (item.taste) {
-      item.taste
-        .split(",")
-        .forEach((taste) => {
-          const value = taste.trim();
-
-          if (value) {
-            tastes.add(value);
-          }
-        });
-    }
-
-    // Veeriyam
-    if (item.veeriyam) {
-      const value = item.veeriyam.trim();
-
-      if (value) {
-        veeriyams.add(value);
-      }
-    }
-
-    // Pharmacological action
-    if (item.pharmacological_action) {
-      item.pharmacological_action
-        .split(",")
-        .forEach((action) => {
-          const value = action.trim();
-
-          if (value) {
-            actions.add(value);
-          }
-        });
-    }
-  });
-
-
-  // Add taste options
-  [...tastes]
-    .sort()
-    .forEach((taste) => {
-      tasteFilter.add(new Option(taste, taste));
+      displayHerbs(filtered);
     });
+  }
 
-
-  // Add veeriyam options
-  [...veeriyams]
-    .sort()
-    .forEach((veeriyam) => {
-      veeriyamFilter.add(new Option(veeriyam, veeriyam));
-    });
-
-
-  // Add first 20 actions
-  [...actions]
-    .sort()
-    .slice(0, 20)
-    .forEach((action) => {
-      actionFilter.add(new Option(action, action));
-    });
-}
-
-
-// ==========================================
-// FILTER DATA
-// ==========================================
-
-function filterData() {
-
-  const search = searchInput.value
-    .trim()
-    .toLowerCase();
-
-  const selectedTaste = tasteFilter.value;
-  const selectedVeeriyam = veeriyamFilter.value;
-  const selectedAction = actionFilter.value;
-
-
-  const filtered = herbsData.filter((herb) => {
-
-    // Search across multiple fields
-    const matchesSearch =
-      !search ||
-
-      (herb.herb_name &&
-        herb.herb_name.toLowerCase().includes(search)) ||
-
-      (herb.tamil_name &&
-        herb.tamil_name.toLowerCase().includes(search)) ||
-
-      (herb.botanical_name &&
-        herb.botanical_name.toLowerCase().includes(search)) ||
-
-      (herb.english_name &&
-        herb.english_name.toLowerCase().includes(search));
-
-
-    // Taste filter
-    const matchesTaste =
-      !selectedTaste ||
-      (
-        herb.taste &&
-        herb.taste
-          .split(",")
-          .map((t) => t.trim())
-          .includes(selectedTaste)
-      );
-
-
-    // Veeriyam filter
-    const matchesVeeriyam =
-      !selectedVeeriyam ||
-      (
-        herb.veeriyam &&
-        herb.veeriyam
-          .toLowerCase()
-          .includes(selectedVeeriyam.toLowerCase())
-      );
-
-
-    // Pharmacological action filter
-    const matchesAction =
-      !selectedAction ||
-      (
-        herb.pharmacological_action &&
-        herb.pharmacological_action
-          .toLowerCase()
-          .includes(selectedAction.toLowerCase())
-      );
-
-
-    return (
-      matchesSearch &&
-      matchesTaste &&
-      matchesVeeriyam &&
-      matchesAction
-    );
-  });
-
-
-  renderCards(filtered);
-}
-
-
-// ==========================================
-// RESET FILTERS
-// ==========================================
-
-function resetFilters() {
-
-  searchInput.value = "";
-  tasteFilter.value = "";
-  veeriyamFilter.value = "";
-  actionFilter.value = "";
-
-  renderCards(herbsData);
-}
+  displayHerbs(herbsDatabase);
+});
