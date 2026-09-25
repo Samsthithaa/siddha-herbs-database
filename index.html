@@ -272,69 +272,96 @@
         let herbsData = [];
         let filteredData = [];
 
+        function safeText(value) {
+            return value ? String(value) : '—';
+        }
+
         async function loadData() {
             try {
                 const response = await fetch('herbs_data.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load JSON');
+                }
+
                 herbsData = await response.json();
                 filteredData = [...herbsData];
                 renderCards(filteredData);
             } catch (error) {
-                console.error("Error loading JSON file:", error);
-                document.getElementById('herbsGrid').innerHTML = '<p style="color:red;">Error loading herb data. Please ensure herbs_data.json is in the same folder.</p>';
+                console.error('Error loading herb data:', error);
+                document.getElementById('herbsGrid').innerHTML = '<p style="color:red;">Error loading herb data. Please make sure herbs_data.json is in the same folder.</p>';
             }
         }
 
         function renderCards(data) {
             const grid = document.getElementById('herbsGrid');
             const countText = document.getElementById('resultCount');
+
             grid.innerHTML = '';
             countText.innerText = `Showing ${data.length} of ${herbsData.length} herbs`;
 
-            if(data.length === 0) {
+            if (data.length === 0) {
                 grid.innerHTML = '<p>No herbs match your criteria.</p>';
                 return;
             }
 
-            data.forEach(herb => {
+            data.forEach((herb) => {
                 const card = document.createElement('div');
                 card.className = 'card';
+
+                const herbName = safeText(herb.herb_name || herb.name);
+                const tamilName = safeText(herb.tamil_name || herb.tamilName);
+                const englishName = safeText(herb.english_name || herb.englishName);
+                const botanicalName = safeText(herb.botanical_name || herb.botanicalName);
+                const taste = safeText(herb.taste || herb.suvai);
+                const veeriyam = safeText(herb.veeriyam || herb.property_thanmai);
+                const gunam = safeText(herb.gunam || herb.indications_tamil || herb.indications_english);
+                const action = safeText(herb.pharmacological_action || herb.action_seigai);
+
                 card.innerHTML = `
                     <div>
                         <div class="card-header">
-                            <h3>${herb.tamil_name} (${herb.english_name})</h3>
-                            <div class="botanical">${herb.botanical_name}</div>
+                            <h3>${tamilName} (${englishName})</h3>
+                            <div class="botanical">${botanicalName}</div>
                         </div>
                         <div class="tag-group">
-                            ${herb.used_parts.map(part => `<span class="tag">${part}</span>`).join('')}
+                            <span class="tag">${herbName}</span>
+                            <span class="tag">${taste}</span>
+                            <span class="tag">${veeriyam}</span>
                         </div>
                         <div class="details">
-                            <strong>சுவை (Taste):</strong> ${herb.taste_suvai.join(', ')}<br>
-                            <strong>தன்மை (Property):</strong> ${herb.property_thanmai}<br>
-                            <strong>முக்கிய செய்கை:</strong> ${herb.action_seigai.slice(0,2).join(', ')}
+                            <strong>சுவை (Taste):</strong> ${taste}<br>
+                            <strong>தன்மை (Property):</strong> ${veeriyam}<br>
+                            <strong>செயல்:</strong> ${action}
                         </div>
                     </div>
-                    <button class="btn-view" onclick="openModal('${herb.id}')">View Full Pharmacology</button>
+                    <button class="btn-view" onclick="openModal(${Number(herb.herb_number || 0)})">View Full Pharmacology</button>
                 `;
+
                 grid.appendChild(card);
             });
         }
 
         function filterData() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
             const suvai = document.getElementById('suvaiFilter').value;
             const thanmai = document.getElementById('thanmaiFilter').value;
 
-            filteredData = herbsData.filter(herb => {
-                const matchesQuery =
-                    herb.tamil_name.toLowerCase().includes(query) ||
-                    herb.english_name.toLowerCase().includes(query) ||
-                    herb.botanical_name.toLowerCase().includes(query) ||
-                    (herb.other_names && herb.other_names.toLowerCase().includes(query)) ||
-                    herb.indications_tamil.some(i => i.toLowerCase().includes(query)) ||
-                    herb.indications_english.some(i => i.toLowerCase().includes(query));
+            filteredData = herbsData.filter((herb) => {
+                const searchableText = [
+                    herb.herb_name,
+                    herb.tamil_name,
+                    herb.english_name,
+                    herb.botanical_name,
+                    herb.gunam,
+                    herb.pharmacological_action,
+                    herb.taste,
+                    herb.suvai,
+                    herb.veeriyam
+                ].join(' ').toLowerCase();
 
-                const matchesSuvai = suvai === "" || herb.taste_suvai.some(s => s.includes(suvai));
-                const matchesThanmai = thanmai === "" || herb.property_thanmai.includes(thanmai);
+                const matchesQuery = query === '' || searchableText.includes(query);
+                const matchesSuvai = suvai === '' || (herb.suvai && herb.suvai.includes(suvai));
+                const matchesThanmai = thanmai === '' || (herb.veeriyam && herb.veeriyam.includes(thanmai));
 
                 return matchesQuery && matchesSuvai && matchesThanmai;
             });
@@ -342,43 +369,35 @@
             renderCards(filteredData);
         }
 
-        document.getElementById('searchInput').addEventListener('input', filterData);
-        document.getElementById('suvaiFilter').addEventListener('change', filterData);
-        document.getElementById('thanmaiFilter').addEventListener('change', filterData);
-
         function openModal(id) {
-            const herb = herbsData.find(h => h.id === id);
+            const herb = herbsData.find((item) => Number(item.herb_number) === Number(id));
             if (!herb) return;
 
             const content = document.getElementById('modalContent');
             content.innerHTML = `
-                <h2>${herb.tamil_name} / ${herb.english_name}</h2>
-                <p style="font-style: italic; color: #6c757d; margin-top:-0.5rem;">${herb.botanical_name}</p>
+                <h2>${safeText(herb.tamil_name)} / ${safeText(herb.english_name)}</h2>
+                <p style="font-style: italic; color: #6c757d; margin-top:-0.5rem;">${safeText(herb.botanical_name)}</p>
                 <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 1rem 0;">
 
                 <div class="modal-field">
-                    <strong>வேறு பெயர்கள் (Synonyms):</strong>
-                    ${herb.other_names || 'None'}
+                    <strong>Herb Name:</strong>
+                    ${safeText(herb.herb_name)}
                 </div>
                 <div class="modal-field">
-                    <strong>உறுப்புகள் (Parts Used):</strong>
-                    ${herb.used_parts.join(', ')}
+                    <strong>சுவை (Taste):</strong>
+                    ${safeText(herb.taste || herb.suvai)}
                 </div>
                 <div class="modal-field">
-                    <strong>சுவை (Taste) & தன்மை (Property):</strong>
-                    ${herb.taste_suvai.join(', ')} | ${herb.property_thanmai} | பிரிவு: ${herb.potency_pirivu}
+                    <strong>தன்மை (Property):</strong>
+                    ${safeText(herb.veeriyam)}
                 </div>
                 <div class="modal-field">
-                    <strong>செய்கை (Pharmacological Actions):</strong>
-                    ${herb.action_seigai.join(', ')}
+                    <strong>குணம் (Gunam):</strong>
+                    ${safeText(herb.gunam)}
                 </div>
                 <div class="modal-field">
-                    <strong>தீர்க்கும் நோய்கள் (Indications - Tamil):</strong>
-                    ${herb.indications_tamil.join(', ')}
-                </div>
-                <div class="modal-field">
-                    <strong>Indications (English):</strong>
-                    ${herb.indications_english.join(', ')}
+                    <strong>Pharmacological Action:</strong>
+                    ${safeText(herb.pharmacological_action)}
                 </div>
             `;
             document.getElementById('modalOverlay').style.display = 'flex';
@@ -388,42 +407,43 @@
             document.getElementById('modalOverlay').style.display = 'none';
         }
 
-       unction exportFilteredData() {
-  if (!filteredData || filteredData.length === 0) return;
+        function exportFilteredData() {
+            if (filteredData.length === 0) return;
 
-  // Including BOM (\uFEFF) ensures Excel opens Tamil/UTF-8 characters correctly
-  let csvContent = "\uFEFFID,Tamil Name,English Name,Botanical Name,Used Parts,Taste,Property,Indications (Tamil)\n";
+            const rows = [
+                ['Herb Number', 'Herb Name', 'Tamil Name', 'English Name', 'Botanical Name', 'Taste', 'Veeriyam', 'Gunam', 'Pharmacological Action']
+            ];
 
-  filteredData.forEach(h => {
-    const safeJoin = arr => Array.isArray(arr) ? arr.join(';') : (arr || '');
-    
-    let row = [
-      `"${h.id || ''}"`,
-      `"${h.tamil_name || ''}"`,
-      `"${h.english_name || ''}"`,
-      `"${h.botanical_name || ''}"`,
-      `"${safeJoin(h.used_parts)}"`,
-      `"${safeJoin(h.taste_suvai)}"`,
-      `"${h.property_thanmai || ''}"`,
-      `"${safeJoin(h.indications_tamil)}"`
-    ].join(',');
+            filteredData.forEach((herb) => {
+                rows.push([
+                    safeText(herb.herb_number),
+                    safeText(herb.herb_name),
+                    safeText(herb.tamil_name),
+                    safeText(herb.english_name),
+                    safeText(herb.botanical_name),
+                    safeText(herb.taste || herb.suvai),
+                    safeText(herb.veeriyam),
+                    safeText(herb.gunam),
+                    safeText(herb.pharmacological_action)
+                ]);
+            });
 
-    csvContent += row + "\n";
-  });
+            const csvContent = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", "siddha_herbs_filtered.csv");
-  document.body.appendChild(link);
-  link.click();
-  
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+            link.href = url;
+            link.download = 'siddha_herbs_filtered.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
 
+        document.getElementById('searchInput').addEventListener('input', filterData);
+        document.getElementById('suvaiFilter').addEventListener('change', filterData);
+        document.getElementById('thanmaiFilter').addEventListener('change', filterData);
         window.onload = loadData;
     </script>
 </body>
