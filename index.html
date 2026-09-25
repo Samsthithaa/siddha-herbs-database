@@ -237,17 +237,17 @@
             <div>
                 <select id="suvaiFilter">
                     <option value="">All Tastes (அனைத்து சுவைகள்)</option>
-                    <option value="இனிப்பு">இனிப்பு (Sweet)</option>
-                    <option value="கசப்பு">கசப்பு / கைப்பு (Bitter)</option>
-                    <option value="கார்ப்பு">கார்ப்பு (Pungent)</option>
-                    <option value="துவர்ப்பு">துவர்ப்பு (Astringent)</option>
+                    <option value="sweet">இனிப்பு / Sweet</option>
+                    <option value="bitter">கசப்பு / கைப்பு / Bitter</option>
+                    <option value="pungent">கார்ப்பு / Pungent</option>
+                    <option value="astringent">துவர்ப்பு / Astringent</option>
                 </select>
             </div>
             <div>
                 <select id="thanmaiFilter">
                     <option value="">All Properties (அனைத்து தன்மைகள்)</option>
-                    <option value="தண்மை">தண்மை (Cooling)</option>
-                    <option value="வெப்பம்">வெப்பம் (Heating)</option>
+                    <option value="cooling">தண்மை / Cooling</option>
+                    <option value="hot">வெப்பம் / Hot</option>
                 </select>
             </div>
         </div>
@@ -276,6 +276,54 @@
             return value ? String(value) : '—';
         }
 
+        function normalizeText(str) {
+            return String(str || '')
+                .toLowerCase()
+                .replace(/[^a-zA-Z0-9\u0B80-\u0BFF\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function matchesTasteFilter(herb, selectedValue) {
+            if (!selectedValue) return true;
+
+            const selected = normalizeText(selectedValue);
+            const tasteText = normalizeText(`${herb.taste || ''} ${herb.suvai || ''}`);
+            const englishText = normalizeText(herb.english_name || '');
+            const tamilText = normalizeText(herb.tamil_name || '');
+
+            const tasteAliases = {
+                sweet: ['sweet', 'இனிப்பு', 'தித்திப்பு', 'inippu', 'thithippu'],
+                bitter: ['bitter', 'கசப்பு', 'கைப்பு', 'kasappu', 'kaippu'],
+                pungent: ['pungent', 'கார்ப்பு', 'karppu'],
+                astringent: ['astringent', 'துவர்ப்பு', 'tuvarppu']
+            };
+
+            if (selected in tasteAliases) {
+                return tasteAliases[selected].some(alias => tasteText.includes(alias) || englishText.includes(alias) || tamilText.includes(alias));
+            }
+
+            return tasteText.includes(selected) || englishText.includes(selected) || tamilText.includes(selected);
+        }
+
+        function matchesPropertyFilter(herb, selectedValue) {
+            if (!selectedValue) return true;
+
+            const selected = normalizeText(selectedValue);
+            const propertyText = normalizeText(`${herb.veeriyam || ''} ${herb.gunam || ''}`);
+
+            const propertyAliases = {
+                cooling: ['cooling', 'தட்பம்', 'சீதம்', 'thadpam', 'seetham'],
+                hot: ['hot', 'வெப்பம்', 'veppam']
+            };
+
+            if (selected in propertyAliases) {
+                return propertyAliases[selected].some(alias => propertyText.includes(alias));
+            }
+
+            return propertyText.includes(selected);
+        }
+
         async function loadData() {
             try {
                 const response = await fetch('herbs_data.json');
@@ -288,7 +336,7 @@
                 renderCards(filteredData);
             } catch (error) {
                 console.error('Error loading herb data:', error);
-                document.getElementById('herbsGrid').innerHTML = '<p style="color:red;">Error loading herb data. Please make sure herbs_data.json is in the same folder.</p>';
+                document.getElementById('herbsGrid').innerHTML = '<p style="color:red;">Error loading herb data. Please make sure herbs_data.json is in the same folder and serve the page via a local web server.</p>';
             }
         }
 
@@ -329,9 +377,10 @@
                             <span class="tag">${veeriyam}</span>
                         </div>
                         <div class="details">
-                            <strong>சுவை (Taste):</strong> ${taste}<br>
-                            <strong>தன்மை (Property):</strong> ${veeriyam}<br>
-                            <strong>செயல்:</strong> ${action}
+                            <strong>சுவை / Taste:</strong> ${taste}<br>
+                            <strong>தன்மை / Property:</strong> ${veeriyam}<br>
+                            <strong>குணம் / Action:</strong> ${gunam}<br>
+                            <strong>செயல் / Pharmacology:</strong> ${action}
                         </div>
                     </div>
                     <button class="btn-view" onclick="openModal(${Number(herb.herb_number || 0)})">View Full Pharmacology</button>
@@ -342,9 +391,9 @@
         }
 
         function filterData() {
-            const query = document.getElementById('searchInput').value.trim().toLowerCase();
-            const suvai = document.getElementById('suvaiFilter').value;
-            const thanmai = document.getElementById('thanmaiFilter').value;
+            const query = normalizeText(document.getElementById('searchInput').value);
+            const selectedTaste = document.getElementById('suvaiFilter').value;
+            const selectedProperty = document.getElementById('thanmaiFilter').value;
 
             filteredData = herbsData.filter((herb) => {
                 const searchableText = [
@@ -356,12 +405,14 @@
                     herb.pharmacological_action,
                     herb.taste,
                     herb.suvai,
-                    herb.veeriyam
-                ].join(' ').toLowerCase();
+                    herb.veeriyam,
+                    herb.english_name,
+                    herb.tamil_name
+                ].join(' ');
 
-                const matchesQuery = query === '' || searchableText.includes(query);
-                const matchesSuvai = suvai === '' || (herb.suvai && herb.suvai.includes(suvai));
-                const matchesThanmai = thanmai === '' || (herb.veeriyam && herb.veeriyam.includes(thanmai));
+                const matchesQuery = !query || normalizeText(searchableText).includes(query);
+                const matchesSuvai = matchesTasteFilter(herb, selectedTaste);
+                const matchesThanmai = matchesPropertyFilter(herb, selectedProperty);
 
                 return matchesQuery && matchesSuvai && matchesThanmai;
             });
@@ -380,23 +431,23 @@
                 <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 1rem 0;">
 
                 <div class="modal-field">
-                    <strong>Herb Name:</strong>
-                    ${safeText(herb.herb_name)}
+                    <strong>Herb Name (English/Tamil):</strong>
+                    ${safeText(herb.herb_name)} / ${safeText(herb.tamil_name)}
                 </div>
                 <div class="modal-field">
-                    <strong>சுவை (Taste):</strong>
-                    ${safeText(herb.taste || herb.suvai)}
+                    <strong>சுவை / Taste:</strong>
+                    ${safeText(herb.suvai)} / ${safeText(herb.taste)}
                 </div>
                 <div class="modal-field">
-                    <strong>தன்மை (Property):</strong>
+                    <strong>தன்மை / Property:</strong>
                     ${safeText(herb.veeriyam)}
                 </div>
                 <div class="modal-field">
-                    <strong>குணம் (Gunam):</strong>
+                    <strong>குணம் / Gunam:</strong>
                     ${safeText(herb.gunam)}
                 </div>
                 <div class="modal-field">
-                    <strong>Pharmacological Action:</strong>
+                    <strong>Pharmacological Action / செயல்:</strong>
                     ${safeText(herb.pharmacological_action)}
                 </div>
             `;
@@ -421,7 +472,7 @@
                     safeText(herb.tamil_name),
                     safeText(herb.english_name),
                     safeText(herb.botanical_name),
-                    safeText(herb.taste || herb.suvai),
+                    safeText(`${herb.suvai || ''} / ${herb.taste || ''}`),
                     safeText(herb.veeriyam),
                     safeText(herb.gunam),
                     safeText(herb.pharmacological_action)
