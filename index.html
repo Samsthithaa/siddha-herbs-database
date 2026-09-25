@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siddha Materia Medica - Research Dashboard</title>
+    <style>
+        :root {
+            --primary: #1b4332;
+            --primary-light: #2d6a4f;
+            --accent: #d8f3dc;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #6c757d;
+            --border: #e9ecef;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 0.3rem 0 0 0;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .search-box {
+            grid-column: 1 / -1;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.2);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .btn-export {
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-export:hover {
+            background-color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .card-header .botanical {
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .tag-group {
+            margin: 0.8rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .tag {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .details {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .btn-view {
+            background: transparent;
+            border: 1px solid var(--primary-light);
+            color: var(--primary-light);
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-view:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal-field {
+            margin-bottom: 1rem;
+        }
+
+        .modal-field strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>மூலிகை ஆராய்வுப் பலகம் (Siddha Herbal Research Dashboard)</h1>
+        <p>Comprehensive Database & Pharmacological Reference for Siddha Physicians and Researchers</p>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by Tamil Name, English Name, Botanical Name, or Indications (e.g., அகத்தி, Glycyrrhiza, வாதம்)...">
+            </div>
+            <div>
+                <select id="suvaiFilter">
+                    <option value="">All Tastes (அனைத்து சுவைகள்)</option>
+                    <option value="இனிப்பு">இனிப்பு (Sweet)</option>
+                    <option value="கசப்பு">கசப்பு / கைப்பு (Bitter)</option>
+                    <option value="கார்ப்பு">கார்ப்பு (Pungent)</option>
+                    <option value="துவர்ப்பு">துவர்ப்பு (Astringent)</option>
+                </select>
+            </div>
+            <div>
+                <select id="thanmaiFilter">
+                    <option value="">All Properties (அனைத்து தன்மைகள்)</option>
+                    <option value="தண்மை">தண்மை (Cooling)</option>
+                    <option value="வெப்பம்">வெப்பம் (Heating)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <span id="resultCount">Showing 0 herbs</span>
+            <button class="btn-export" onclick="exportFilteredData()">Export Results (CSV)</button>
+        </div>
+
+        <div class="grid" id="herbsGrid"></div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let herbsData = [];
+        let filteredData = [];
+
+        async function loadData() {
+            try {
+                const response = await fetch('herbs_data.json');
+                herbsData = await response.json();
+                filteredData = [...herbsData];
+                renderCards(filteredData);
+            } catch (error) {
+                console.error("Error loading JSON file:", error);
+                document.getElementById('herbsGrid').innerHTML = '<p style="color:red;">Error loading herb data. Please ensure herbs_data.json is in the same folder.</p>';
+            }
+        }
+
+        function renderCards(data) {
+            const grid = document.getElementById('herbsGrid');
+            const countText = document.getElementById('resultCount');
+            grid.innerHTML = '';
+            countText.innerText = `Showing ${data.length} of ${herbsData.length} herbs`;
+
+            if(data.length === 0) {
+                grid.innerHTML = '<p>No herbs match your criteria.</p>';
+                return;
+            }
+
+            data.forEach(herb => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <h3>${herb.tamil_name} (${herb.english_name})</h3>
+                            <div class="botanical">${herb.botanical_name}</div>
+                        </div>
+                        <div class="tag-group">
+                            ${herb.used_parts.map(part => `<span class="tag">${part}</span>`).join('')}
+                        </div>
+                        <div class="details">
+                            <strong>சுவை (Taste):</strong> ${herb.taste_suvai.join(', ')}<br>
+                            <strong>தன்மை (Property):</strong> ${herb.property_thanmai}<br>
+                            <strong>முக்கிய செய்கை:</strong> ${herb.action_seigai.slice(0,2).join(', ')}
+                        </div>
+                    </div>
+                    <button class="btn-view" onclick="openModal('${herb.id}')">View Full Pharmacology</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const suvai = document.getElementById('suvaiFilter').value;
+            const thanmai = document.getElementById('thanmaiFilter').value;
+
+            filteredData = herbsData.filter(herb => {
+                const matchesQuery =
+                    herb.tamil_name.toLowerCase().includes(query) ||
+                    herb.english_name.toLowerCase().includes(query) ||
+                    herb.botanical_name.toLowerCase().includes(query) ||
+                    (herb.other_names && herb.other_names.toLowerCase().includes(query)) ||
+                    herb.indications_tamil.some(i => i.toLowerCase().includes(query)) ||
+                    herb.indications_english.some(i => i.toLowerCase().includes(query));
+
+                const matchesSuvai = suvai === "" || herb.taste_suvai.some(s => s.includes(suvai));
+                const matchesThanmai = thanmai === "" || herb.property_thanmai.includes(thanmai);
+
+                return matchesQuery && matchesSuvai && matchesThanmai;
+            });
+
+            renderCards(filteredData);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterData);
+        document.getElementById('suvaiFilter').addEventListener('change', filterData);
+        document.getElementById('thanmaiFilter').addEventListener('change', filterData);
+
+        function openModal(id) {
+            const herb = herbsData.find(h => h.id === id);
+            if (!herb) return;
+
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <h2>${herb.tamil_name} / ${herb.english_name}</h2>
+                <p style="font-style: italic; color: #6c757d; margin-top:-0.5rem;">${herb.botanical_name}</p>
+                <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 1rem 0;">
+
+                <div class="modal-field">
+                    <strong>வேறு பெயர்கள் (Synonyms):</strong>
+                    ${herb.other_names || 'None'}
+                </div>
+                <div class="modal-field">
+                    <strong>உறுப்புகள் (Parts Used):</strong>
+                    ${herb.used_parts.join(', ')}
+                </div>
+                <div class="modal-field">
+                    <strong>சுவை (Taste) & தன்மை (Property):</strong>
+                    ${herb.taste_suvai.join(', ')} | ${herb.property_thanmai} | பிரிவு: ${herb.potency_pirivu}
+                </div>
+                <div class="modal-field">
+                    <strong>செய்கை (Pharmacological Actions):</strong>
+                    ${herb.action_seigai.join(', ')}
+                </div>
+                <div class="modal-field">
+                    <strong>தீர்க்கும் நோய்கள் (Indications - Tamil):</strong>
+                    ${herb.indications_tamil.join(', ')}
+                </div>
+                <div class="modal-field">
+                    <strong>Indications (English):</strong>
+                    ${herb.indications_english.join(', ')}
+                </div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function exportFilteredData() {
+            if (filteredData.length === 0) return;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Tamil Name,English Name,Botanical Name,Used Parts,Taste,Property,Indications (Tamil)\n";
+
+            filteredData.forEach(h => {
+                let row = `"${h.id}","${h.tamil_name}","${h.english_name}","${h.botanical_name}","${h.used_parts.join(';')}"`,
+                          `"${h.taste_suvai.join(';')}","${h.property_thanmai}","${h.indications_tamil.join(';')}"`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "siddha_herbs_filtered.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
