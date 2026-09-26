@@ -55,12 +55,73 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             margin-bottom: 1.5rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr;
             gap: 1rem;
         }
 
         .search-box {
             grid-column: 1 / -1;
+        }
+
+        .filter-group {
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .filter-group legend {
+            margin-bottom: 0.65rem;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 130px;
+            min-height: 48px;
+            padding: 0.45rem 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--text-main);
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .filter-option:hover {
+            border-color: var(--primary-light);
+        }
+
+        .filter-option[aria-pressed="true"] {
+            border-color: var(--primary-light);
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .filter-icon {
+            display: grid;
+            flex: 0 0 30px;
+            width: 30px;
+            height: 30px;
+            place-items: center;
+            border-radius: 50%;
+            background: #f3f5ed;
+            font-size: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            line-height: 1.2;
         }
 
         input, select {
@@ -225,31 +286,35 @@
 <body>
 
     <header>
-        <h1>மூலிகை (Siddha Herbal Research Dashboard)</h1>
+        <h1>மூலிகை ஆராய்வுப் பலகம் (Siddha Herbal Research Dashboard)</h1>
         <p>Comprehensive Database & Pharmacological Reference for Siddha Physicians and Researchers</p>
     </header>
 
     <div class="container">
         <div class="controls">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search by Tamil Name, English Name, Botanical Name, or Indications (e.g., அகத்தி, Glycyrrhiza, வாதம்)...">
+                <input type="text" id="searchInput" placeholder="Search herb names, botanical names, or pharmacological actions...">
             </div>
-            <div>
-                <select id="suvaiFilter">
-                    <option value="">All Tastes </option>
-                    <option value="sweet">இனிப்பு / Sweet</option>
-                    <option value="bitter">கசப்பு / கைப்பு / Bitter</option>
-                    <option value="pungent">கார்ப்பு / Pungent</option>
-                    <option value="astringent">துவர்ப்பு / Astringent</option>
-                </select>
-            </div>
-            <div>
-                <select id="thanmaiFilter">
-                    <option value="">All Properties (அனைத்து தன்மைகள்)</option>
-                    <option value="cooling">தட்பம் / Cooling</option>
-                    <option value="hot">வெப்பம் / Hot</option>
-                </select>
-            </div>
+            <fieldset class="filter-group">
+                <legend>Taste / Suvai</legend>
+                <div class="filter-options">
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="" aria-pressed="true"><span class="filter-icon">✿</span><span class="filter-label">All tastes</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="sweet" aria-pressed="false"><span class="filter-icon">🍯</span><span class="filter-label">Sweet<br>இனிப்பு</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="sour" aria-pressed="false"><span class="filter-icon">🍋</span><span class="filter-label">Sour<br>புளிப்பு</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="salty" aria-pressed="false"><span class="filter-icon">🧂</span><span class="filter-label">Salty<br>உவர்ப்பு</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="pungent" aria-pressed="false"><span class="filter-icon">🌶️</span><span class="filter-label">Pungent<br>கார்ப்பு</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="bitter" aria-pressed="false"><span class="filter-icon">🌿</span><span class="filter-label">Bitter<br>கைப்பு</span></button>
+                    <button class="filter-option" type="button" data-filter-group="taste" data-value="astringent" aria-pressed="false"><span class="filter-icon">🍂</span><span class="filter-label">Astringent<br>துவர்ப்பு</span></button>
+                </div>
+            </fieldset>
+            <fieldset class="filter-group">
+                <legend>Veeriyam</legend>
+                <div class="filter-options">
+                    <button class="filter-option" type="button" data-filter-group="veeriyam" data-value="" aria-pressed="true"><span class="filter-icon">✿</span><span class="filter-label">All</span></button>
+                    <button class="filter-option" type="button" data-filter-group="veeriyam" data-value="cooling" aria-pressed="false"><span class="filter-icon">❄️</span><span class="filter-label">Cooling<br>தட்பம் / சீதம்</span></button>
+                    <button class="filter-option" type="button" data-filter-group="veeriyam" data-value="hot" aria-pressed="false"><span class="filter-icon">☀️</span><span class="filter-label">Hot<br>வெப்பம்</span></button>
+                </div>
+            </fieldset>
         </div>
 
         <div class="stats-bar">
@@ -271,6 +336,8 @@
     <script>
         let herbsData = [];
         let filteredData = [];
+        let selectedTaste = '';
+        let selectedVeeriyam = '';
 
         function safeText(value) {
             return value ? String(value) : '—';
@@ -289,44 +356,44 @@
 
             const selected = normalizeText(selectedValue);
             const tasteText = normalizeText(`${herb.taste || ''} ${herb.suvai || ''}`);
-            const englishText = normalizeText(herb.english_name || '');
-            const tamilText = normalizeText(herb.tamil_name || '');
 
             const tasteAliases = {
                 sweet: ['sweet', 'இனிப்பு', 'தித்திப்பு', 'inippu', 'thithippu'],
+                sour: ['sour', 'புளிப்பு', 'pulippu'],
+                salty: ['salty', 'உவர்ப்பு', 'uvarppu'],
                 bitter: ['bitter', 'கசப்பு', 'கைப்பு', 'kasappu', 'kaippu'],
                 pungent: ['pungent', 'கார்ப்பு', 'karppu'],
                 astringent: ['astringent', 'துவர்ப்பு', 'tuvarppu']
             };
 
             if (selected in tasteAliases) {
-                return tasteAliases[selected].some(alias => tasteText.includes(alias) || englishText.includes(alias) || tamilText.includes(alias));
+                return tasteAliases[selected].some(alias => tasteText.includes(alias));
             }
 
-            return tasteText.includes(selected) || englishText.includes(selected) || tamilText.includes(selected);
+            return tasteText.includes(selected);
         }
 
-        function matchesPropertyFilter(herb, selectedValue) {
+        function matchesVeeriyamFilter(herb, selectedValue) {
             if (!selectedValue) return true;
 
             const selected = normalizeText(selectedValue);
-            const propertyText = normalizeText(`${herb.veeriyam || ''} ${herb.gunam || ''}`);
+            const veeriyamText = normalizeText(herb.veeriyam || '');
 
-            const propertyAliases = {
+            const veeriyamAliases = {
                 cooling: ['cooling', 'தட்பம்', 'சீதம்', 'thadpam', 'seetham'],
                 hot: ['hot', 'வெப்பம்', 'veppam']
             };
 
-            if (selected in propertyAliases) {
-                return propertyAliases[selected].some(alias => propertyText.includes(alias));
+            if (selected in veeriyamAliases) {
+                return veeriyamAliases[selected].some(alias => veeriyamText.includes(alias));
             }
 
-            return propertyText.includes(selected);
+            return veeriyamText.includes(selected);
         }
 
         async function loadData() {
             try {
-                const response = await fetch('herbs_data.json');
+                const response = await fetch('herbs_data.json', { cache: 'no-store' });
                 if (!response.ok) {
                     throw new Error('Failed to load JSON');
                 }
@@ -362,7 +429,6 @@
                 const botanicalName = safeText(herb.botanical_name || herb.botanicalName);
                 const taste = safeText(herb.taste || herb.suvai);
                 const veeriyam = safeText(herb.veeriyam || herb.property_thanmai);
-                const gunam = safeText(herb.gunam || herb.indications_tamil || herb.indications_english);
                 const action = safeText(herb.pharmacological_action || herb.action_seigai);
 
                 card.innerHTML = `
@@ -379,7 +445,6 @@
                         <div class="details">
                             <strong>சுவை / Taste:</strong> ${taste}<br>
                             <strong>தன்மை / Property:</strong> ${veeriyam}<br>
-                            <strong>குணம் / Action:</strong> ${gunam}<br>
                             <strong>செயல் / Pharmacology:</strong> ${action}
                         </div>
                     </div>
@@ -392,8 +457,6 @@
 
         function filterData() {
             const query = normalizeText(document.getElementById('searchInput').value);
-            const selectedTaste = document.getElementById('suvaiFilter').value;
-            const selectedProperty = document.getElementById('thanmaiFilter').value;
 
             filteredData = herbsData.filter((herb) => {
                 const searchableText = [
@@ -401,7 +464,6 @@
                     herb.tamil_name,
                     herb.english_name,
                     herb.botanical_name,
-                    herb.gunam,
                     herb.pharmacological_action,
                     herb.taste,
                     herb.suvai,
@@ -412,7 +474,7 @@
 
                 const matchesQuery = !query || normalizeText(searchableText).includes(query);
                 const matchesSuvai = matchesTasteFilter(herb, selectedTaste);
-                const matchesThanmai = matchesPropertyFilter(herb, selectedProperty);
+                const matchesThanmai = matchesVeeriyamFilter(herb, selectedVeeriyam);
 
                 return matchesQuery && matchesSuvai && matchesThanmai;
             });
@@ -443,10 +505,6 @@
                     ${safeText(herb.veeriyam)}
                 </div>
                 <div class="modal-field">
-                    <strong>குணம் / Gunam:</strong>
-                    ${safeText(herb.gunam)}
-                </div>
-                <div class="modal-field">
                     <strong>Pharmacological Action / செயல்:</strong>
                     ${safeText(herb.pharmacological_action)}
                 </div>
@@ -462,7 +520,7 @@
             if (filteredData.length === 0) return;
 
             const rows = [
-                ['Herb Number', 'Herb Name', 'Tamil Name', 'English Name', 'Botanical Name', 'Taste', 'Veeriyam', 'Gunam', 'Pharmacological Action']
+                ['Herb Number', 'Herb Name', 'Tamil Name', 'English Name', 'Botanical Name', 'Taste', 'Veeriyam', 'Pharmacological Action']
             ];
 
             filteredData.forEach((herb) => {
@@ -474,7 +532,6 @@
                     safeText(herb.botanical_name),
                     safeText(`${herb.suvai || ''} / ${herb.taste || ''}`),
                     safeText(herb.veeriyam),
-                    safeText(herb.gunam),
                     safeText(herb.pharmacological_action)
                 ]);
             });
@@ -493,8 +550,19 @@
         }
 
         document.getElementById('searchInput').addEventListener('input', filterData);
-        document.getElementById('suvaiFilter').addEventListener('change', filterData);
-        document.getElementById('thanmaiFilter').addEventListener('change', filterData);
+        document.querySelectorAll('[data-filter-group]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const group = button.dataset.filterGroup;
+                if (group === 'taste') selectedTaste = button.dataset.value;
+                if (group === 'veeriyam') selectedVeeriyam = button.dataset.value;
+
+                document.querySelectorAll(`[data-filter-group="${group}"]`).forEach((option) => {
+                    option.setAttribute('aria-pressed', String(option === button));
+                });
+
+                filterData();
+            });
+        });
         window.onload = loadData;
     </script>
 </body>
