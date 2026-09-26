@@ -536,7 +536,9 @@
                 ]);
             });
 
-            const csvContent = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+            // Add UTF-8 BOM so Excel/Windows apps detect Tamil text correctly.
+            // CSV files do not support a specific font like "Latha"; they store Unicode text only.
+            const csvContent = '\uFEFF' + rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
